@@ -1,5 +1,5 @@
 The subversion module provides a ``subversion`` class and a
-``working-copy`` definition. It has only been tested on Debian Etch.
+``working_copy`` definition. It has only been tested on Debian Etch.
 
 **subversion** (*class*)
   Installs the ``subversion`` package. On Debian systems and its derivats 
@@ -12,15 +12,11 @@ The subversion module provides a ``subversion`` class and a
     }
 
 **subversion::xmlstarlet** (*class*)
-  Installs the ``xmlstarlet`` package, which is required for the ``working-copy``
+  Installs the ``xmlstarlet`` package, which is required for the ``working_copy``
   definition.
 
 
-**subversion::basics** (*class*)
-  Some basic directory setups for a server, which might get used on ``subversion::svnrepo``
-
-
-**subversion::working-copy** (*definition*)
+**subversion::working_copy** (*definition*)
   Checks out a copy of the named subversion project into the specified
   directory. Keeps the working copy in sync with the repository. The
   URL that is used to check out the working copy is constructed from
@@ -48,7 +44,7 @@ The subversion module provides a ``subversion`` class and a
 
   Example::
 
-    subversion::working-copy {
+    subversion::working_copy {
       "search":
         path => "/home/search/search",
         owner => "search",
@@ -64,15 +60,13 @@ The subversion module provides a ``subversion`` class and a
 
   - ``$name``: The name of the subversion repository. This will be used
     as the directory name.
+  - ``$ensure``: 'present' creates the new repository, 'absent' deletes the
+    repository *including all the data it contains*!
   - ``$path``: The path of the parent directory of the subversion repository
-    Default is set to absent, which means that ``subversion::basics`` gets
-    included and the parent directory is set to: ``/srv/svn/``
-  - ``$owner``: The owner of the repository. Default is to false, which means
-    that puppet defaults are used.
-  - ``$group``: The group of the repository. Default is to false, which means
-    that puppet defaults are used.
-  - ``$mode``: The mode of the repository directory. Default is to false, which means
-    that puppet defaults are used.
+    Default is set to: ``/srv/svn/`` (which is *not* created automatically)
+  - ``$owner``: The owner of the repository. Default uses puppet defaults.
+  - ``$group``: The group of the repository. Default uses puppet defaults.
+  - ``$mode``: The mode of the repository directory. Default uses puppet defaults.
 
   Example::
 

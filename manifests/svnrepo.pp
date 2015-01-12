@@ -2,11 +2,11 @@
 # forked by Puzzle ITC
 # Marcel Härry haerry+puppet(at)puzzle.ch
 # Simon Josi josi+puppet(at)puzzle.ch
-# 
+#
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 # WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -17,54 +17,46 @@
 
 # Create a new subversion repository.
 define subversion::svnrepo(
-    $path='absent',
-    $owner='false',
-    $group='false',
-    $mode='false'
+    $ensure = present,
+    $path   = '/srv/svn',
+    $owner  = undef,
+    $group  = undef,
+    $mode   = undef,
 ) {
-    include subversion
+  include subversion
 
-    case $path {
-        absent: {
-            include subversion::basics
-            $create_path = "/srv/svn/${name}"
-        }
-        default: { $create_path = "${path}/${name}" }
+  $repository_path = "${path}/${name}"
+
+  if $ensure == 'present' {
+    exec { "create-svn-${name}":
+      command => "/usr/bin/svnadmin create ${repository_path}",
+      creates => "${repository_path}/db",
+      user    => $owner,
+      require => [
+        File[$repository_path],
+        Package['subversion'],
+        File[$path]
+        ],
     }
-    exec { "create-svn-$name":
-        command => "/usr/bin/svnadmin create $create_path",
-        creates => "$create_path",
-        before => File["${create_path}"],
+  }
+
+  $file_ensure = $ensure ? {
+    'absent' => 'absent',
+    default  => directory,
+  }
+
+  file{$repository_path:
+    ensure => $file_ensure,
+    owner  => $owner,
+    group  => $group,
+    mode   => $mode,
+  }
+
+  if $ensure == 'absent' {
+    File[$repository_path] {
+      force   => true,
+      recurse => true,
+      purge   => true,
     }
-    case $path {
-        absent: { 
-            Exec["create-svn-$name"]{
-                require +> [ Package['subversion'], File['/srv/svn'] ],
-            }
-        }
-        default: {
-            Exec["create-svn-$name"]{
-                require +> Package['subversion'],
-            }
-        }
-    }
-    file{"${create_path}":
-        ensure => directory,
-        recurse => true,
-    }
-    if $owner {
-        File["${create_path}"]{
-            owner => $owner,
-        }
-    } 
-    if $group {
-        File["${create_path}"]{
-            group => $group,
-        }
-    } 
-    if $mode {
-        File["${create_path}"]{
-            mode => $mode,
-        }
-    } 
+  }
 }
